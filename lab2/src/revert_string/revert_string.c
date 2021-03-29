@@ -13,7 +13,7 @@ void RevertString(char *str)
 {
     int i;
     int l = strlen(str);
-    char* newstr = "";
+    //char* newstr = "";
 
 	for(i = 0; i <= l/2; i++)
     {                                                                 
