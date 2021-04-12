@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,13 +15,26 @@
 
 #include "find_min_max.h"
 #include "utils.h"
+     
+pid_t p_to_kill = 0;
+void Kill_ps()
+{
+    //if(p_to_kill != 0)
+    //{
+        kill(p_to_kill, SIGKILL);
+        printf("Killed %d\n", p_to_kill);
+    //}
+}
 
 int main(int argc, char **argv) 
 {
     int seed = -1;
     int array_size = -1;
     int pnum = -1;
-    bool with_files = false;
+    bool with_files = true;
+    ////
+    int timeout = 0;
+    ////
 
     while (true) 
     {
@@ -31,6 +45,9 @@ int main(int argc, char **argv)
             {"seed", required_argument, 0, 0},
             {"array_size", required_argument, 0, 0},
             {"pnum", required_argument, 0, 0},
+            ////
+            {"timeout", required_argument, 0, 0},
+            ////
             {"by_files", no_argument, 0, 'f'},
             {0, 0, 0, 0}
         };
@@ -62,13 +79,20 @@ int main(int argc, char **argv)
 			            break;
                     case 2:
                         pnum = atoi(optarg);
+                        printf("pnum = %d \n", pnum);
                         if (pnum <= 0)
                         { 
                             printf("pnum must be a positive number\n");
                             return 1;
                         }
                         break;
+                    //////
                     case 3:
+                        timeout = atoi(optarg);
+                        printf("timeout = %d \n", timeout);
+                        break;
+                    //////
+                    case 4:
                         with_files = true;
                         break;
                     defalut:
@@ -113,6 +137,15 @@ int main(int argc, char **argv)
         pid_t child_pid = fork();
         if (child_pid >= 0) 
         {
+            ////////
+            if(timeout != 0)
+            {
+                p_to_kill = child_pid;
+                signal(SIGALRM, Kill_ps);
+                alarm(timeout);
+                printf("Alarm started \n");
+            }
+            ////////
             active_child_processes += 1;
             if (child_pid == 0) 
             {
@@ -135,12 +168,17 @@ int main(int argc, char **argv)
                         fwrite(&minmax, sizeof(struct MinMax), 1, file);
                     }
                     fclose(file);
+                    ////test
+                    while(true)
+                    {}
+                    ////
                 }
                 else
                 {
                     close(fds[0]);
                     write(fds[1], &minmax, sizeof(struct MinMax));
                 }
+                //p_to_kill = 0;
                 return 0;
             }
         } 
