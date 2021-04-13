@@ -16,14 +16,26 @@
 #include "find_min_max.h"
 #include "utils.h"
      
-pid_t p_to_kill = 0;
+pid_t* child_processes;
+int len;
+int active_child_processes = 0;
+
 void Kill_ps()
 {
-    //if(p_to_kill != 0)
-    //{
-        kill(p_to_kill, SIGKILL);
-        printf("Killed %d\n", p_to_kill);
-    //}
+    for(int i = 0; i<len; i++)
+    {
+        kill(child_processes[i], SIGKILL);
+        printf("Killed %d\n", child_processes[i]);
+    }
+    int status;
+    while(active_child_processes > 0)
+    {
+        while(waitpid(-1, &status, WNOHANG) > 0)
+        {
+            active_child_processes -= 1;
+        }
+    }
+    exit(0);
 }
 
 int main(int argc, char **argv) 
@@ -79,7 +91,7 @@ int main(int argc, char **argv)
 			            break;
                     case 2:
                         pnum = atoi(optarg);
-                        printf("pnum = %d \n", pnum);
+                        len = pnum;
                         if (pnum <= 0)
                         { 
                             printf("pnum must be a positive number\n");
@@ -89,7 +101,6 @@ int main(int argc, char **argv)
                     //////
                     case 3:
                         timeout = atoi(optarg);
-                        printf("timeout = %d \n", timeout);
                         break;
                     //////
                     case 4:
@@ -120,10 +131,17 @@ int main(int argc, char **argv)
         printf("Usage: %s --seed \"num\" --array_size \"num\" --pnum \"num\" \n", argv[0]);
         return 1;
     }
+    ////////
+    if(timeout != 0)
+    {
+        signal(SIGALRM, Kill_ps);
+        alarm(timeout);
+    }
+    child_processes = malloc(sizeof(pid_t) * pnum);
+    ////////
 
     int *array = malloc(sizeof(int) * array_size);
     GenerateArray(array, array_size, seed);
-    int active_child_processes = 0;
     
     struct timeval start_time;
     gettimeofday(&start_time, NULL);
@@ -135,17 +153,9 @@ int main(int argc, char **argv)
     for (int i = 0; i < pnum; i++) 
     {
         pid_t child_pid = fork();
+        child_processes[i] = child_pid;
         if (child_pid >= 0) 
         {
-            ////////
-            if(timeout != 0)
-            {
-                p_to_kill = child_pid;
-                signal(SIGALRM, Kill_ps);
-                alarm(timeout);
-                printf("Alarm started \n");
-            }
-            ////////
             active_child_processes += 1;
             if (child_pid == 0) 
             {
@@ -168,17 +178,12 @@ int main(int argc, char **argv)
                         fwrite(&minmax, sizeof(struct MinMax), 1, file);
                     }
                     fclose(file);
-                    ////test
-                    while(true)
-                    {}
-                    ////
                 }
                 else
                 {
                     close(fds[0]);
                     write(fds[1], &minmax, sizeof(struct MinMax));
                 }
-                //p_to_kill = 0;
                 return 0;
             }
         } 
@@ -234,10 +239,6 @@ int main(int argc, char **argv)
     double elapsed_time = (finish_time.tv_sec - start_time.tv_sec) * 1000.0;
     elapsed_time += (finish_time.tv_usec - start_time.tv_usec) / 1000.0;
     
-    for (int i = 0; i < array_size; i++)
-    {
-        printf("%d \n", array[i]);
-    }
     printf("\n");
     
     free(array);
