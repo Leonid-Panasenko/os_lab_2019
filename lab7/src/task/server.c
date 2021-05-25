@@ -61,6 +61,29 @@ int main(int argc, char *argv[]) {
 
     while ((nread = read(cfd, buf, BUFSIZE)) > 0) {
       write(1, &buf, nread);
+      printf("Sendind a new address...\n");
+      write(cfd, "127.0.0.1", 9);
+      write(cfd, "20001", 5);
+    }
+
+    if (nread == -1) {
+      perror("read");
+      exit(1);
+    }
+    close(cfd);
+  }
+
+  while (1) {
+    unsigned int clilen = kSize;
+
+    if ((cfd = accept(lfd, (SADDR *)&cliaddr, &clilen)) < 0) {
+      perror("accept");
+      exit(1);
+    }
+    printf("connection established\n");
+
+    while ((nread = read(cfd, buf, BUFSIZE)) > 0) {
+      write(1, &buf, nread);
     }
 
     if (nread == -1) {
