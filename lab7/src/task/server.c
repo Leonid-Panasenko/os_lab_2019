@@ -12,7 +12,7 @@
 #define SADDR struct sockaddr
 
 
-//Usage: ./tcpserver Port Bufsize
+//Usage: ./server Port Bufsize
 int main(int argc, char *argv[]) {
     int SERV_PORT = atoi(argv[1]);
     int BUFSIZE = atoi(argv[2]);
