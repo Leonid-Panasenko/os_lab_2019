@@ -45,11 +45,12 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  write(1, "Input message to send\n", 22);
+  write(1, "Input message to send: 1111\n", 28);
     if (write(fd, "1111\n", 5) < 0) {
       perror("write");
       exit(1);
     }
+
 
 struct sockaddr_in new_servaddr;
 char* ip; 
@@ -71,27 +72,37 @@ char* ip;
 
 
 //new socket
+    printf("--Point -1--\n");
+
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     perror("socket creating");
     exit(1);
   }
 
-  if (inet_pton(AF_INET, ip, &new_servaddr.sin_addr) <= 0) {
+  if (inet_pton(AF_INET, ip, &(new_servaddr.sin_addr)) <= 0) {
     perror("bad address");
     exit(1);
   }
+
+    printf("--Point 0--\n");
 
   if (connect(fd, (SADDR *)&new_servaddr, SIZE) < 0) {
     perror("connect");
     exit(1);
   }
 
+
   write(1, "Input message to send\n", 22);
   while ((nread = read(0, buf, BUFSIZE)) > 0) {
+
+    printf("--Point 1--\n");
+
     if (write(fd, buf, nread) < 0) {
       perror("write");
       exit(1);
     }
+
+    printf("--Point 2--\n");
   }
 
   close(fd);

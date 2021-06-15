@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     unsigned int clilen = kSize;
+    int sent = 0;
 
     if ((cfd = accept(lfd, (SADDR *)&cliaddr, &clilen)) < 0) {
       perror("accept");
@@ -62,8 +63,16 @@ int main(int argc, char *argv[]) {
     while ((nread = read(cfd, buf, BUFSIZE)) > 0) {
       write(1, &buf, nread);
       printf("Sendind a new address...\n");
-      write(cfd, "127.0.0.1", 9);
-      write(cfd, "20001", 5);
+      write(cfd, "127.000.000.001", 15);
+      write(cfd, "20002", 5);
+      sent = 1;
+      printf("Sent\n");
+      break;
+    }
+
+    if(sent == 1)
+    {
+        break;
     }
 
     if (nread == -1) {
@@ -72,6 +81,8 @@ int main(int argc, char *argv[]) {
     }
     close(cfd);
   }
+
+    printf("--Point 1--\n");
 
   while (1) {
     unsigned int clilen = kSize;
@@ -84,7 +95,10 @@ int main(int argc, char *argv[]) {
 
     while ((nread = read(cfd, buf, BUFSIZE)) > 0) {
       write(1, &buf, nread);
+      printf("--Point 2--\n");
     }
+
+      printf("--Point 3--\n");
 
     if (nread == -1) {
       perror("read");
