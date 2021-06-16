@@ -53,33 +53,51 @@ int main(int argc, char *argv[]) {
 
 
 struct sockaddr_in new_servaddr;
-char* ip; 
+char ip[9]; 
+char c_port[5];
 
-  memset(&servaddr, 0, SIZE);
-  servaddr.sin_family = AF_INET;
-
-  if ((nread = read(fd, buf, BUFSIZE)) > 0) {
-      write(1, &buf, nread);
-      ip = buf;
-      printf("\n");
-    }
+  memset(&new_servaddr, 0, SIZE);
+  new_servaddr.sin_family = AF_INET;
 
   if ((nread = read(fd, buf, BUFSIZE)) > 0) {
-      write(1, &buf, nread);
-      servaddr.sin_port = htons(atoi(buf));
-      printf("\n");
+      //write(1, &buf, nread);
+      printf("Recieved: %s\n", buf);
+      //strncpy(ip, buf, 15);
+      for(int i = 0; i<15; i++)
+      {
+          if(i>9)
+          {
+              c_port[i-10] = buf[i];
+          }
+          if(i<9)
+          {
+              ip[i] = buf[i];
+          }
+      }
+      char c_port_form[5];
+      strncpy(c_port_form, c_port, 5);
+      printf("IP: |%s|\n", ip);
+      printf("Port: |%s|\n", c_port_form);
+      new_servaddr.sin_port = htons(atoi(c_port_form));
+      //write(1, ip, nread);
     }
+
+//   if ((nread = read(fd, buf, BUFSIZE)) > 0) {
+//       printf("Port: ");
+//       write(1, &buf, nread);
+//       servaddr.sin_port = htons(atoi(buf));
+//       printf("\n");
+//     }
 
 
 //new socket
-    printf("--Point -1--\n");
 
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     perror("socket creating");
     exit(1);
   }
 
-  if (inet_pton(AF_INET, ip, &(new_servaddr.sin_addr)) <= 0) {
+  if (inet_pton(AF_INET, ip, &new_servaddr.sin_addr) <= 0) {
     perror("bad address");
     exit(1);
   }

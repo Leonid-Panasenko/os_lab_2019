@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     int BUFSIZE = atoi(argv[2]);
 
     //
-    SERV_PORT = 20001;
+    //SERV_PORT = 20001;
     BUFSIZE = 100;
     //
 
@@ -63,8 +63,9 @@ int main(int argc, char *argv[]) {
     while ((nread = read(cfd, buf, BUFSIZE)) > 0) {
       write(1, &buf, nread);
       printf("Sendind a new address...\n");
-      write(cfd, "127.000.000.001", 15);
-      write(cfd, "20002", 5);
+      write(cfd, "127.0.0.1/20002", 15);
+      
+      //write(cfd, "20002", 5);
       sent = 1;
       printf("Sent\n");
       break;
